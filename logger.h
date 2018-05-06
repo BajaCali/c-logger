@@ -7,10 +7,8 @@
 #include <syslog.h>
 
 #ifndef LOG_LEVEL
-#define LOG_LEVEL LOG_DEBUG
+#define LOG_LEVEL LOG_WARNING
 #endif
-
-
 
 #ifndef _DISABLE_LOGGER
 #define _DISABLE_LOGGER 0
@@ -19,9 +17,37 @@
 #define TO_S(M) #M
 #define STR(M) TO_S(M)
 
+#ifdef _LOG_SYSLOG
+#undef _LOG_SYSLOG
+#define _LOG_SYSLOG 1
+#else
+#define _LOG_SYSLOG 0
+#endif // _LOG_SYSLOG
+
+#ifdef _LOG_STDOUT
+#undef _LOG_STDOUT
+#define _LOG_STDOUT 1
+#else
+#define _LOG_STDOUT 0
+#endif // _LOG_STDOUT
+
+#ifdef _LOG_NO_STD
+#undef _LOG_NO_STD
+#define _LOG_NO_STD 1
+#else
+#define _LOG_NO_STD 0
+#endif // _LOG_NO_STD
+
 #define LOG_MSG(LEVEL, f_str, ...)                                                   \
-    do {                                                                        \
-        fprintf(stderr, "[" STR(LEVEL) "]["  __FILE__  ":" STR(__LINE__) "] " f_str, ##__VA_ARGS__); \
+    do { \
+        if (!_LOG_NO_STD) {\
+            if (_LOG_STDOUT)                                                      \
+                fprintf(stdout, "[" STR(LEVEL) "]["  __FILE__  ":" STR(__LINE__) "] " f_str, ##__VA_ARGS__); \
+            else \
+                fprintf(stderr, "[" STR(LEVEL) "]["  __FILE__  ":" STR(__LINE__) "] " f_str, ##__VA_ARGS__); \
+        } \
+        if (_LOG_SYSLOG) \
+            syslog(3, "[" STR(LEVEL) "]["  __FILE__  ":" STR(__LINE__) "] " f_str, ##__VA_ARGS__); \
     } while(0)
 
 
