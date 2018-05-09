@@ -38,6 +38,20 @@
 #define _LOG_NO_STD 0
 #endif // _LOG_NO_STD
 
+#ifdef _LOG_RUNTIME_ENVIRONMENT
+#undef _LOG_RUNTIME_ENVIRONMENT
+#define _LOG_RUNTIME_ENVIRONMENT 1
+extern FILE* user_file;
+#define LOG_UMSG(LEVEL, f_str, ...) fprintf(user_file, "[" STR(LEVEL) "]["  __FILE__  ":" STR(__LINE__)
+int logger_read_configuration(struct logger_conf *config, const char *file_name);
+int logger_init(struct logger_conf *configuraiton);
+int logger_close(void);
+int logger_write_configuration(struct logger_conf *config, const char *file_name);
+#else
+#define LOG_UMSG(LEVEL, f_str, ...)
+#define _LOG_RUNTIME_ENVIRONMENT 0
+#endif // _LOG_RUNTIME_ENVIRONMENT
+
 #define LOG_MSG(LEVEL, f_str, ...)                                                   \
     do { \
         if (!_LOG_NO_STD) {\
@@ -48,6 +62,7 @@
         } \
         if (_LOG_SYSLOG) \
             syslog(3, "[" STR(LEVEL) "]["  __FILE__  ":" STR(__LINE__) "] " f_str, ##__VA_ARGS__); \
+        LOG_UMSG(LEVEL, f_str, ...) \
     } while(0)
 
 
